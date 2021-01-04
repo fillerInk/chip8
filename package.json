@@ -1,0 +1,22 @@
+{
+  "name": "chip8",
+  "version": "1.0.0",
+  "description": "A chip-8 emulator",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fillerInk/chip8.git"
+  },
+  "author": "Sreeram Venkitesh",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fillerInk/chip8/issues"
+  },
+  "homepage": "https://github.com/fillerInk/chip8#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
