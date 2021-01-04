@@ -40,7 +40,7 @@ class Monitor {
     }
 
     render(){
-        
+        console.log("going to render")
         this.ctx.clearRect(0,0, this.canvas.width,this.canvas.height);
 
         for(let i=0; i< this.cols*this.rows; i++){
@@ -57,8 +57,8 @@ class Monitor {
     }
 
     testRender(){
-        this.setPixel(0, 0);
-        this.setPixel(5, 2);
+        this.display[0] = 1;
+        this.display[10] = 1;
     }
 
 
