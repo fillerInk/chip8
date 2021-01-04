@@ -50,12 +50,14 @@ class CPU{
         for(let i=0; i<sprites.length; i++){
             this.memory[i] = sprites[i];
         }
+        console.log('Sprites loaded into memory!')
     }
 
     loadProgramIntoMemory(program){
         for(let loc=0; loc < program.length; loc++){
-            this.memory[0x200 + loc] = program.loc;
+            this.memory[0x200 + loc] = program[loc];
         }
+        console.log(this.memory)
     }
 
     loadRom(romName){
@@ -66,7 +68,8 @@ class CPU{
             // if request response has any content
             if(request.response){
                 let program = new Uint8Array(request.response);
-
+                console.log('rom is ')
+                console.log(program)
                 self.loadProgramIntoMemory(program);
             }
         }
@@ -165,7 +168,7 @@ class CPU{
                     case 0x4:
                         let sum = (this.v[x] += this.v[y]);
                         this.v[0xF] = 0;
-                        if(sum > OxFF){
+                        if(sum > 0xFF){
                             this.v[0xF] = 1;
                         }
                         this.v[x] = sum;
@@ -207,16 +210,47 @@ class CPU{
                 this.i = (opcode & 0xFFF);
                 break;
             case 0xB000:
+                this.pc = (opcode & 0xFFF) + this.v[0];
                 break;
             case 0xC000:
+                let rand = Math.floor(Math.random() * 0xFF);
+                this.v[x] = rand & (opcode & 0xFF);
                 break;
             case 0xD000:
+                let width = 8;
+                let height = (opcode & 0xF);
+
+                this.v[0xF] = 0;
+
+                for (let row = 0; row < height; row++) {
+                    let sprite = this.memory[this.i + row];
+
+                    for (let col = 0; col < width; col++) {
+                        // If the bit (sprite) is not 0, render/erase the pixel
+                        if ((sprite & 0x80) > 0) {  
+                            // If setPixel returns 1, which means a pixel was erased, set VF to 1
+                            if (this.monitor.setPixel(this.v[x] + col, this.v[y] + row)) {
+                                this.v[0xF] = 1;
+                            }
+                        }
+
+                        // Shift the sprite left 1. This will move the next next col/bit of the sprite into the first position.
+                        // Ex. 10010000 << 1 will become 0010000
+                        sprite <<= 1;
+                    }
+                }
                 break;
             case 0xE000:
                 switch (opcode & 0xFF) {
                     case 0x9E:
+                        if (this.keyboard.isKeyPressed(this.v[x])) {
+                            this.pc += 2;
+                        }
                         break;
                     case 0xA1:
+                        if (!this.keyboard.isKeyPressed(this.v[x])) {
+                            this.pc += 2;
+                        }
                         break;
                 }
         
@@ -224,22 +258,48 @@ class CPU{
             case 0xF000:
                 switch (opcode & 0xFF) {
                     case 0x07:
+                        this.v[x] = this.delayTimer;
                         break;
                     case 0x0A:
+                        this.paused = true;
+
+                        this.keyboard.onNextKeyPress = function(key) {
+                            this.v[x] = key;
+                            this.paused = false;
+                        }.bind(this);
                         break;
                     case 0x15:
+                        this.delayTimer = this.v[x];
                         break;
                     case 0x18:
+                        this.soundTimer = this.v[x];
                         break;
                     case 0x1E:
+                        this.i += this.v[x];
                         break;
                     case 0x29:
+                        this.i = this.v[x] * 5;
                         break;
                     case 0x33:
+                        // Get the hundreds digit and place it in I.
+                        this.memory[this.i] = parseInt(this.v[x] / 100);
+
+                        // Get tens digit and place it in I+1. Gets a value between 0 and 99,
+                        // then divides by 10 to give us a value between 0 and 9.
+                        this.memory[this.i + 1] = parseInt((this.v[x] % 100) / 10);
+
+                        // Get the value of the ones (last) digit and place it in I+2.
+                        this.memory[this.i + 2] = parseInt(this.v[x] % 10);
                         break;
                     case 0x55:
+                        for (let registerIndex = 0; registerIndex <= x; registerIndex++) {
+                            this.memory[this.i + registerIndex] = this.v[registerIndex];
+                        }
                         break;
                     case 0x65:
+                        for (let registerIndex = 0; registerIndex <= x; registerIndex++) {
+                            this.v[registerIndex] = this.memory[this.i + registerIndex];
+                        }
                         break;
                 }
         

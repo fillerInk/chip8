@@ -1,6 +1,10 @@
 import Monitor from './monitor.js';
+import Keyboard from './keyboard.js'; 
+import CPU from './cpu.js'; // NEW
 
 const monitor = new Monitor(10);
+const keyboard = new Keyboard();
+const cpu = new CPU(monitor, keyboard); // NEW
 
 let loop;
 
@@ -11,10 +15,9 @@ function init(){
     fpsInterval = 1000/fps;
     then = Date.now();
     startTime = then;
-    
-    monitor.testRender();
-    monitor.render();
 
+    cpu.loadSpritesIntoMemory(); // NEW
+    cpu.loadRom('BLITZ'); // NEW
     loop = requestAnimationFrame(step);
 }
 
@@ -24,7 +27,7 @@ function step(){
     elapsed = now - then;
 
     if(elapsed > fpsInterval){
-
+        cpu.cycle();
     }
 
     loop = requestAnimationFrame(step);

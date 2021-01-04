@@ -19,28 +19,26 @@ class Monitor {
     }
 
     setPixel(x,y){
-        if(x > this.cols){
-            x -= this.cols
-        }else if(x < this.cols){
-            x += this.cols
+        if (x > this.cols) {
+            x -= this.cols;
+        } else if (x < 0) {
+            x += this.cols;
         }
-
-        if(y > this.rows){
-            y -= this.rows
-        }else if(y < this.rows){
+        
+        if (y > this.rows) {
+            y -= this.rows;
+        } else if (y < 0) {
             y += this.rows;
         }
 
-        let pixelLocation = x + (y * this.cols);
+        let pixelLoc = x + (y * this.cols);
 
-        this.display[pixelLocation] ^= 1;
+        this.display[pixelLoc] ^= 1;
 
-        //return true if pixel was erased, return false if pixel wasn't erased
-        return !this.display[pixelLocation]
+        return !this.display[pixelLoc];
     }
 
     render(){
-        console.log("going to render")
         this.ctx.clearRect(0,0, this.canvas.width,this.canvas.height);
 
         for(let i=0; i< this.cols*this.rows; i++){
